@@ -15,7 +15,7 @@ type Entry struct {
 
 func main() {
     entries := []Entry{
-        {Name: "The Wrong Man", Date: "2026-01-05", Type: "FILM"},
+        NewEntryFromString("film         |    The Wrong Man|2026-01-05  "),
         {Name: "Moby Dick", Date: "2026-01-08", Type: "book"},
         {Name: "Chungking Express", Date: "2026-01-12 09:40:00", Type: "FiLm"},
     }
@@ -23,6 +23,15 @@ func main() {
     for _, entry := range entries {
         fmt.Println(entry)
     }
+}
+
+func NewEntryFromString(entryString string) Entry {
+    parts := strings.Split(entryString, "|")
+    for i := range parts {
+        parts[i] = strings.TrimSpace(parts[i])
+    }
+
+    return Entry{Name: parts[1], Date: parts[2], Type: parts[0]}
 }
 
 func (ent Entry) String() string {
