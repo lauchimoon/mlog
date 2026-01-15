@@ -4,26 +4,20 @@ import (
     "fmt"
     "strings"
     "time"
+    "unicode"
 )
-
-const (
-    MediatypeBook = iota
-    MediatypeFilm
-)
-
-type MediaType int
 
 type Entry struct {
     Name string
     Date string
-    Type MediaType
+    Type string
 }
 
 func main() {
     entries := []Entry{
-        {Name: "The Wrong Man", Date: "2026-01-05", Type: MediatypeFilm},
-        {Name: "Moby Dick", Date: "2026-01-08", Type: MediatypeBook},
-        {Name: "Chungking Express", Date: "2026-01-12 09:40:00", Type: MediatypeFilm},
+        {Name: "The Wrong Man", Date: "2026-01-05", Type: "FILM"},
+        {Name: "Moby Dick", Date: "2026-01-08", Type: "book"},
+        {Name: "Chungking Express", Date: "2026-01-12 09:40:00", Type: "FiLm"},
     }
 
     for _, entry := range entries {
@@ -32,15 +26,20 @@ func main() {
 }
 
 func (ent Entry) String() string {
-    typ := ""
-    if ent.Type == MediatypeBook {
-       typ = "Book"
-    } else {
-        typ = "Film"
+    dateFields := strings.Fields(ent.Date)
+    return capitalize(ent.Type) + " | " + ent.Name + ": " + dateFields[0] + " (" + getTimeSince(ent.Date) + ")"
+}
+
+func capitalize(s string) string {
+    builder := strings.Builder{}
+    firstChar := rune(s[0])
+    builder.WriteRune(unicode.ToUpper(firstChar))
+
+    for _, c := range s[1:] {
+        builder.WriteRune(unicode.ToLower(c))
     }
 
-    dateFields := strings.Fields(ent.Date)
-    return typ + " | " + ent.Name + ": " + dateFields[0] + " (" + getTimeSince(ent.Date) + ")"
+    return builder.String()
 }
 
 func getTimeSince(dateString string) string {
