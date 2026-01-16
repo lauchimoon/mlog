@@ -1,18 +1,21 @@
 package main
 
 import (
+    "bufio"
     "flag"
     "fmt"
     "os"
     "strings"
+    "sort"
     "time"
     "unicode"
 )
 
 type Entry struct {
-    Name string
-    Date string
-    Type string
+    Name     string
+    Date     string
+    DateUnix int64
+    Type     string
 }
 
 const (
@@ -21,20 +24,15 @@ const (
 )
 
 func main() {
-    logFile, err := os.OpenFile(LogFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+    logFile, err := os.OpenFile(LogFileName, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
     if err != nil {
         fmt.Printf("%s: %v\n", ProgramName, err)
         return
     }
     defer logFile.Close()
 
-    entries := []Entry{
-        NewEntryFromString("film         |    The Wrong Man|2026-01-05  "),
-        {Name: "Moby Dick", Date: "2026-01-08", Type: "book"},
-        {Name: "Chungking Express", Date: "2026-01-12 09:40:00", Type: "FiLm"},
-    }
-
     addMedia := flag.Bool("add", false, "Create new entry in log")
+    listMedia := flag.Bool("list", false, "List all your entries")
     flag.Parse()
 
     if *addMedia {
@@ -50,10 +48,25 @@ func main() {
             fmt.Printf("%s: %v\n", ProgramName, err)
             return
         }
-    }
+    } else if *listMedia {
+        entries := []Entry{}
+        scanner := bufio.NewScanner(logFile)
 
-    for _, entry := range entries {
-        fmt.Println(entry)
+        for scanner.Scan() {
+            entries = append(entries, NewEntryFromString(scanner.Text()))
+        }
+
+        sort.Slice(entries, func(i, j int) bool {
+            if entries[i].DateUnix != entries[j].DateUnix {
+                return entries[i].DateUnix < entries[j].DateUnix
+            }
+
+            return entries[i].Name < entries[j].Name
+        })
+
+        for _, entry := range entries {
+            fmt.Println(entry)
+        }
     }
 }
 
@@ -63,7 +76,19 @@ func NewEntryFromString(entryString string) Entry {
         parts[i] = strings.TrimSpace(parts[i])
     }
 
-    return Entry{Name: parts[1], Date: parts[2], Type: parts[0]}
+    ent := Entry{Name: parts[1], Type: parts[0]}
+    dateString := parts[2]
+    date, err := time.Parse(time.DateTime, dateString)
+    if err != nil {
+        date, err = time.Parse(time.DateOnly, dateString)
+        if err != nil {
+            return Entry{}
+        }
+    }
+
+    ent.Date = dateString
+    ent.DateUnix = date.Unix()
+    return ent
 }
 
 func (ent Entry) String() string {
