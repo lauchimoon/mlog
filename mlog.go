@@ -3,6 +3,7 @@ package main
 import (
     "flag"
     "fmt"
+    "os"
     "strings"
     "time"
     "unicode"
@@ -16,9 +17,17 @@ type Entry struct {
 
 const (
     ProgramName = "mlog"
+    LogFileName = "log.txt"
 )
 
 func main() {
+    logFile, err := os.OpenFile(LogFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+    if err != nil {
+        fmt.Printf("%s: %v\n", ProgramName, err)
+        return
+    }
+    defer logFile.Close()
+
     entries := []Entry{
         NewEntryFromString("film         |    The Wrong Man|2026-01-05  "),
         {Name: "Moby Dick", Date: "2026-01-08", Type: "book"},
@@ -30,11 +39,17 @@ func main() {
 
     if *addMedia {
         args := flag.Args()
-        entries = append(entries, Entry{
+        ent := Entry{
             Name: args[1],
             Date: args[2],
             Type: args[0],
-        })
+        }
+
+        _, err = logFile.WriteString(fmt.Sprintf("%s|%s|%s\n", strings.ToLower(ent.Type), ent.Name, ent.Date))
+        if err != nil {
+            fmt.Printf("%s: %v\n", ProgramName, err)
+            return
+        }
     }
 
     for _, entry := range entries {
