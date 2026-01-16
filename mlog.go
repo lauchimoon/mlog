@@ -1,6 +1,7 @@
 package main
 
 import (
+    "flag"
     "fmt"
     "strings"
     "time"
@@ -13,11 +14,27 @@ type Entry struct {
     Type string
 }
 
+const (
+    ProgramName = "mlog"
+)
+
 func main() {
     entries := []Entry{
         NewEntryFromString("film         |    The Wrong Man|2026-01-05  "),
         {Name: "Moby Dick", Date: "2026-01-08", Type: "book"},
         {Name: "Chungking Express", Date: "2026-01-12 09:40:00", Type: "FiLm"},
+    }
+
+    addMedia := flag.Bool("add", false, "Create new entry in log")
+    flag.Parse()
+
+    if *addMedia {
+        args := flag.Args()
+        entries = append(entries, Entry{
+            Name: args[1],
+            Date: args[2],
+            Type: args[0],
+        })
     }
 
     for _, entry := range entries {
