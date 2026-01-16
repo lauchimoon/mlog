@@ -52,6 +52,11 @@ func main() {
 
     if *addMedia {
         args := flag.Args()
+        if len(args) < 3 {
+            fmt.Printf("usage: %s -add <type> <name> <date>\n", ProgramName)
+            return
+        }
+
         ent := Entry{
             Name: args[1],
             Date: args[2],
