@@ -33,7 +33,23 @@ func main() {
 
     addMedia := flag.Bool("add", false, "Create new entry in log")
     listMedia := flag.Bool("list", false, "List all your entries")
+    listByType := flag.String("lstype", "", "List entries by type. Empty value is equivalent to -list")
     flag.Parse()
+
+    entries := []Entry{}
+    scanner := bufio.NewScanner(logFile)
+
+    for scanner.Scan() {
+        entries = append(entries, NewEntryFromString(scanner.Text()))
+    }
+
+    sort.Slice(entries, func(i, j int) bool {
+        if entries[i].DateUnix != entries[j].DateUnix {
+            return entries[i].DateUnix < entries[j].DateUnix
+        }
+
+        return entries[i].Name < entries[j].Name
+    })
 
     if *addMedia {
         args := flag.Args()
@@ -48,24 +64,15 @@ func main() {
             fmt.Printf("%s: %v\n", ProgramName, err)
             return
         }
-    } else if *listMedia {
-        entries := []Entry{}
-        scanner := bufio.NewScanner(logFile)
-
-        for scanner.Scan() {
-            entries = append(entries, NewEntryFromString(scanner.Text()))
-        }
-
-        sort.Slice(entries, func(i, j int) bool {
-            if entries[i].DateUnix != entries[j].DateUnix {
-                return entries[i].DateUnix < entries[j].DateUnix
-            }
-
-            return entries[i].Name < entries[j].Name
-        })
-
+    } else if *listMedia || *listByType == "" {
         for _, entry := range entries {
             fmt.Println(entry)
+        }
+    } else if *listByType != "" {
+        for _, entry := range entries {
+            if entry.Type == strings.ToLower(*listByType) {
+                fmt.Println(entry)
+            }
         }
     }
 }
