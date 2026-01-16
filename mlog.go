@@ -32,8 +32,7 @@ func main() {
     defer logFile.Close()
 
     addMedia := flag.Bool("add", false, "Create new entry in log")
-    listMedia := flag.Bool("list", false, "List all your entries")
-    listByType := flag.String("lstype", "", "List entries by type. Empty value is equivalent to -list")
+    listByType := flag.String("lstype", "", "List entries by type. Empty value is equivalent to listing all entries")
     flag.Parse()
 
     entries := []Entry{}
@@ -64,11 +63,13 @@ func main() {
             fmt.Printf("%s: %v\n", ProgramName, err)
             return
         }
-    } else if *listMedia || *listByType == "" {
+    }
+
+    if *listByType == "" {
         for _, entry := range entries {
             fmt.Println(entry)
         }
-    } else if *listByType != "" {
+    } else {
         for _, entry := range entries {
             if entry.Type == strings.ToLower(*listByType) {
                 fmt.Println(entry)
