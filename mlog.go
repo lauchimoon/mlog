@@ -68,9 +68,7 @@ func main() {
             fmt.Printf("%s: %v\n", ProgramName, err)
             return
         }
-    }
-
-    if *listByType == "" {
+    } else if *listByType == "" {
         for _, entry := range entries {
             fmt.Println(entry)
         }
