@@ -52,15 +52,20 @@ func main() {
 
     if *addMedia {
         args := flag.Args()
-        if len(args) < 3 {
-            fmt.Printf("usage: %s -add <type> <name> <date>\n", ProgramName)
+        if len(args) < 2 {
+            fmt.Printf("usage: %s -add <type> <name> [date]\n", ProgramName)
             return
         }
 
         ent := Entry{
             Name: args[1],
-            Date: args[2],
             Type: args[0],
+        }
+
+        if len(args) >= 3 {
+            ent.Date = args[2]
+        } else {
+            ent.Date = time.Now().Format(time.DateTime)
         }
 
         _, err = logFile.WriteString(fmt.Sprintf("%s|%s|%s\n", strings.ToLower(ent.Type), ent.Name, ent.Date))
